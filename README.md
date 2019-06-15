@@ -1,2 +1,2 @@
-# GCER-2019
-Code for GCER 2019 competition.
+# LACT_Botball_0328
+Botball repository
