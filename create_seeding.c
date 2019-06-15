@@ -1,6 +1,6 @@
 /*
 ==========================================================================
-    Copyright 2019 All Rights Reserved - Tony Xin
+    Copyright 2019 All Rights Reserved - Tony Xin and Ben Kurzion -- the coolest Jewish man of all time
 	Name:          Create Seeding
 	By:            Tony Xin
 
@@ -29,7 +29,8 @@ const int wristMiddle = 260;
 const int armUp = 0;
 const int armDown = -4200;
 const int armLevel = -3560;
-const int armMiddle = -1600;
+const int armInitial = -3100;
+const int armMiddle = -1680;
 
 void linefollow(int speed, int time, int changeGyroZ) {
     int i = 0;
@@ -67,7 +68,9 @@ void move(int speed, int time, int changeGyroZ) {//speed -100 to 100, time is in
 int scanForItem() {
 	int i;
     for(i=0; i<10; i++) {
-        turnRight(1);
+        create_drive_direct(70, -70);
+        msleep(23);
+        create_stop();
         if(analog(etPin) > 2000) {
             return 1;
         }
@@ -125,7 +128,7 @@ int main(){
     enable_servos();
     create_connect();
     
-    moveArm(armLevel);
+    moveArm(armInitial);
     set_servo_position(wristPin, wristInitial);
     set_servo_position(clawPin, clawClose);
     
@@ -146,17 +149,17 @@ int main(){
     msleep(100);
   
     // Raising up for first sense/pick up
-   	move(-150, 145, change);
+   	move(-150, 155, change);
     msleep(300);
     if(scanForItem() == 0) {
 		// First one is burning
         burningBuilding = 0;
         move(200, 300, change);
     } else {
-        msleep(200);
+        msleep(500);
     	set_servo_position(clawPin, clawClose);
         msleep(800);
-        mrp(motorPin, 100, 100);
+        mrp(motorPin, 700, 500);
         move(200, 400, change);
         turnRight(180);
         moveArm(armLevel);
