@@ -20,17 +20,18 @@ const int clawPin = 0;
 const int wristPin = 1;
 const int etPin = 0;
 
-const int clawClose = 400;
+const int clawClose = 550;
 const int clawOpen = 1900;
+const int clawCloseWater = 1300;
 
 const int wristUp = 150;
-const int wristDown = 710;
+const int wristDown = 500;
 const int wristInitial = 2047;
 const int wristMiddle = 50;
 
 const int armUp = 0;
 const int armDown = -4200;
-const int armLevel = -3560;
+const int armLevel = -3950;
 const int armInitial = -3100;
 const int armMiddle = -1900;
 
@@ -96,6 +97,7 @@ void detectBlackRight() {
 	while(get_create_rfcliff_amt() > 2200){
     	create_drive_direct(0, 80);		//move to black line first
     }
+    create_stop();
 }
 
 void squareBlackLine() {
@@ -135,12 +137,12 @@ void slow_servo(int port, int pos) {
     
 	while(get_servo_position(port) > pos) {
 		set_servo_position(port, get_servo_position(port)-10);
-        msleep(20);
+        msleep(8);
     }
     
     while(get_servo_position(port) < pos) {
 		set_servo_position(port, get_servo_position(port)+10);
-        msleep(20);
+        msleep(8);
         if(get_servo_position(port) - pos < 100 && get_servo_position(port) - pos > -100) {
             break;
         }
@@ -181,7 +183,7 @@ int main(){
     msleep(100);
   
     // Raising up for first sense/pick up
-   	move(-150, 260, change);
+   	move(-150, 215, change);
     msleep(600);
     if(scanForItem(20) == 0) {
 		// First one is burning
@@ -194,13 +196,13 @@ int main(){
     	set_servo_position(clawPin, clawClose);
         msleep(800);
         mrp(motorPin, 700, 1500);
-        msleep(300);
+        msleep(600);
         set_servo_position(wristPin, 0);
         msleep(700);
         move(200, 300, change);
         turnRight(150);
         moveArm(armLevel);
-        set_servo_position(clawPin, clawOpen);
+        slow_servo(clawPin, clawOpen);
         msleep(300);
         turnLeft(150);
         move(150, 50, change);
@@ -213,9 +215,9 @@ int main(){
     set_servo_position(wristPin, wristUp);
     turnLeft(40);
     msleep(300);
-    move(-200, 360, change);
+    move(-200, 390, change);
     msleep(500);
-    if(scanForItem(60) == 0) {
+    if(scanForItem(45) == 0) {
 		// First one is burning
         burningBuilding = 1;
         move(200, 250, change);
@@ -229,7 +231,7 @@ int main(){
     	set_servo_position(clawPin, clawClose);
         msleep(400);
         mrp(motorPin, 500, 400);
-        msleep(400);
+        msleep(600);
         set_servo_position(wristPin, 0);
         //slow_servo(wristPin, 0);
         msleep(400);
@@ -237,7 +239,7 @@ int main(){
     	msleep(300);
         turnRight(180);
         moveArm(armLevel);
-        set_servo_position(clawPin, clawOpen);
+        slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle);
    		move(-150, 100, change);
@@ -249,34 +251,71 @@ int main(){
    	
     turnLeft(40);
     msleep(300);
-    move(-200, 240, change);
+    move(-200, 215, change);
     msleep(500);
-    if(scanForItem(25) == 0) {
+    if(scanForItem(38) == 0) {
 		// First one is burning
         burningBuilding = 2;
-        move(200, 300, change);
+        move(200, 440, change);
+   		move(-150, 100, change);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armLevel);
+        turnLeft(40);
     } else {
         msleep(500);
-   		move(-150, 100, change);
+   		move(-150, 180, change);
         msleep(500);
     	set_servo_position(clawPin, clawClose);
         msleep(400);
-        mrp(motorPin, 500, 400);
-        msleep(400);
+        mrp(motorPin, 700, 1500);
+        msleep(600);
         set_servo_position(wristPin, 0);
         //slow_servo(wristPin, 0);
         msleep(400);
-        move(200, 500, change);
+        move(200, 440, change);
     	msleep(300);
-        turnLeft(160);
+        turnLeft(130);
         moveArm(armLevel);
-        set_servo_position(clawPin, clawOpen);
+        slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle);
         msleep(500);
+        turnRight(90);
     }
+    
+    // Square up near block
+    
+    move(-200, 750, change);
+    msleep(200);
+    turnLeft(90);
+    msleep(200);
+    move(-200, 1000, change);
+    msleep(200);
+    move(200, 200, change);
+    turnRight(90);
+    msleep(200);
+    squareBlackLine();
+    msleep(200);
+    
+    // Move towards block
+    
+    moveArm(armLevel + 1000);
+    set_servo_position(wristPin, wristDown);
+    msleep(200);
+    turnLeft(10);
+    msleep(300);
+    move(-150, 400, change);
+    msleep(300);
+    
+    // Sense block
+    
+    scanForItem(50);
+    msleep(200);
+    moveArm(armLevel + 400);
+    msleep(200);
+    set_servo_position(clawPin, clawCloseWater);
+    msleep(200);
+    moveArm(armMiddle);
     
     
     create_disconnect();
