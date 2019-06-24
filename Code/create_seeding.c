@@ -23,7 +23,7 @@ const int btnPin = 0;
 
 const int clawClose = 550;
 const int clawOpen = 1900;
-const int clawCloseWater = 950;
+const int clawCloseWater = 850;
 
 const int wristUp = 300;
 const int wristDown = 650;
@@ -31,10 +31,10 @@ const int wristInitial = 2050;
 const int wristMiddle = 190;
 
 const int armUp = 0;
-const int armDown = -4200;
-const int armLevel = -3950;
-const int armInitial = -3250;
-const int armMiddle = -1950;
+const int armDown = -4030;
+const int armLevel = -3800;
+const int armInitial = -3100;
+const int armMiddle = -1950; //1950
 
 void lineFollow(int speed, int time) {
     int i = 0;
@@ -257,7 +257,7 @@ int main(){
     if(scanForItem(45) == 0) {
 		// First one is burning
         burningBuilding = 1;
-        move(200, 250, change);
+        move(200, 230, change);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle+100);
     } else {
@@ -292,7 +292,7 @@ int main(){
         msleep(100);
         set_servo_position(wristPin, wristMiddle);
         msleep(300);
-        move(-200, 230, change);
+        move(-200, 220, change);
         msleep(500);
         scanForItem(50);
         
@@ -348,7 +348,7 @@ int main(){
     // Sense block
     
     scanForItem(50);
-    turnRight(5);
+    turnRight(4);
     msleep(200);
     moveArm(armLevel + 400);
     msleep(200);
@@ -360,7 +360,7 @@ int main(){
     
    	turnRight(115);
     msleep(200);
-    move(-200, 300, change);
+    move(-200, 280, change);
     msleep(200);
     squareBlackLineBack();
     msleep(200);
@@ -374,7 +374,7 @@ int main(){
         msleep(50);
         set_servo_position(wristPin, wristMiddle);
         msleep(50);
-     	lineFollow(110, 1250);
+     	lineFollow(110, 1000);
         msleep(200);
         turnRight(90);
         msleep(200);
