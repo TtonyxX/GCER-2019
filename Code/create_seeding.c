@@ -1,14 +1,10 @@
 /*
-==========================================================================
-    Copyright 2019 All Rights Reserved - Tony Xin
-	Name:          Create Seeding
-	By:            Tony Xin
-
-	PROPRIETARY and CONFIDENTIAL
-============================================================================
+Created by Tony Xin for GCER 2019
 */
+
 #include <kipr/botball.h>
 #include "createDrive.h"
+#include<time.h>
 
 int change;
 int building;
@@ -36,6 +32,9 @@ const int armLevel = -3800;
 const int armInitial = -3100;
 const int armMiddle = -1950; //1950
 
+int timeWait = 0;
+int timeDone = 0;
+
 void lineFollow(int speed, int time) {
     int i = 0;
     
@@ -58,10 +57,35 @@ int gyroCalibrate() {
    	return changeGyroZ;
 }
 
+void wait() {
+	msleep(timeWait);
+    timeDone = 1;
+}
+
 void move(int speed, int time, int changeGyroZ) {//speed -100 to 100, time is in miliseconds
-    int i = 0;
+    
+    timeWait = time*3.78;
+    timeDone = 0;
+    thread thread = thread_create(wait);
+    thread_start(thread);
+    
     int anglechange = 0;
-    for(i = 0; i < time; i++) {//gyro move
+    while(timeDone == 0) {
+        anglechange -= gyro_x()-changeGyroZ;
+        create_drive_direct(speed+anglechange/200, speed-anglechange/200);
+        msleep(1);
+    }
+    
+    create_stop();
+    thread_wait(thread);
+    thread_destroy(thread);
+}
+
+void moveTwo(int speed, int time, int changeGyroZ) {
+    
+    int anglechange = 0;
+    int i = 0;
+    for(i = 0; i < time; i++) {
         anglechange -= gyro_x()-changeGyroZ;
         create_drive_direct(speed+anglechange/200, speed-anglechange/200);
         msleep(1);
@@ -144,6 +168,13 @@ void senseLine() {
     create_stop();
 }
 
+void senseLineBack() {
+    while(get_create_lcliff_amt() > 2200){
+    	create_drive_direct(-180, -180);
+    }
+    create_stop();
+}
+
 void turnLeft(int angle) {
 	create_drive_direct(-200, 200);
     msleep(10.7 * angle);
@@ -184,6 +215,32 @@ int main(){
     enable_servos();
     create_connect();
     
+    move(-200, 500, change);
+    //moveTwo(-200, 500, change);
+    
+    /*int i;
+    int a = 0;
+    for(i = 0; i < 700; i++) {
+        create_drive_straight(-200);
+        msleep(1);
+        printf("%d ", gyro_x()-change);
+        a += gyro_x()-change;
+    }
+    a /= 700;
+    printf("\n %d \n", a);*/
+    double total_time;
+	clock_t start, end;
+	start = clock();
+	//time count starts 
+	srand(time(NULL));
+	
+    msleep(1000);
+    
+    end = clock();
+	//time count stops 
+	total_time = ((double) (end - start))/CLOCKS_PER_SEC;
+    printf("%f\n", total_time);
+    
     // clear motor position
     while(digital(btnPin) == 0) {
         mrp(motorPin, 700, 10);
@@ -207,9 +264,9 @@ int main(){
     // Ready for Picking Up Things
     //move(350, 500, change);
     move(250, 250, change);
-    msleep(300);
+    msleep(400);
     senseLine();
-    msleep(300);
+    msleep(400);
     move(200, 120, change);
     msleep(100);
     set_servo_position(wristPin, wristMiddle);
@@ -220,7 +277,7 @@ int main(){
     msleep(100);
   
     // Raising up for first sense/pick up
-   	move(-150, 215, change);
+   	move(-150, 140, change);
     msleep(600);
     if(scanForItem(20) == 0) {
 		// First one is burning
@@ -252,7 +309,7 @@ int main(){
     set_servo_position(wristPin, wristUp+100);
     turnLeft(40);
     msleep(300);
-    move(-200, 370/*390*/, change);
+    move(-200, 350/*390*/, change);
     msleep(500);
     if(scanForItem(45) == 0) {
 		// First one is burning
@@ -261,7 +318,7 @@ int main(){
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle+100);
     } else {
-    	set_servo_position(wristPin, wristUp+140);
+    	set_servo_position(wristPin, wristUp+100);
         turnRight(3);
         msleep(500);
    		move(-150, 160, change);
@@ -292,13 +349,13 @@ int main(){
         msleep(100);
         set_servo_position(wristPin, wristMiddle);
         msleep(300);
-        move(-200, 220, change);
+        move(-200, 270, change);
         msleep(500);
         scanForItem(50);
         
-        turnRight(3);
+        turnRight(0);
         msleep(500);
-        move(-150, 200, change);
+        move(-150, 70, change);
         msleep(500);
         set_servo_position(clawPin, clawClose);
         msleep(400);
@@ -307,7 +364,7 @@ int main(){
         set_servo_position(wristPin, 0);
         //slow_servo(wristPin, 0);
         msleep(400);
-        move(200, 440, change);
+        move(200, 400, change);
         msleep(300);
         turnLeft(140);
         moveArm(armLevel);
@@ -325,7 +382,7 @@ int main(){
     
     // Square up near block
     
-    move(-200, 860, change);
+    move(-200, 600, change);
     msleep(200);
     turnLeft(90);
     msleep(200);
@@ -360,13 +417,14 @@ int main(){
     
    	turnRight(115);
     msleep(200);
-    move(-200, 280, change);
+    move(-200, 260, change);
     msleep(200);
     squareBlackLineBack();
     msleep(200);
     move(-180, 40, change);
     msleep(200);
     turnLeft(90);
+    senseLineBack();
     
     if(burningBuilding == 0) {
         
