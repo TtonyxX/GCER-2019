@@ -321,28 +321,18 @@ int main(){
     shut_down_in(119);
     //people and ambulance go on ground of nonburning building, medical supplies go on top of nonburning building
     //firetruck goes on ground of burning building, firefighter goes on top of burning building 
-    
-    //this is ur testing code that i commented out have fun
-    /*msleep(2000); 
-    turn_left90(); //turns left out of starting box once create leaves 
-    msleep(500);
-    move(1500, 500, change);
-    set_servo_position(arm, arm_down); 
-    slow_servo(claw, claw_open_medical); 
-    line_sense_grey(1000); */
-    
-    turn_left90();//russell ur bad//russell ur bad//russell ur bad//russell ur bad//russell ur bad
-    msleep(300);//russell ur bad//russell ur bad//russell ur bad//russell ur bad//russell ur bad
-    move(-1000, 400, change);//russell ur bad//russell ur bad//russell ur bad//russell ur bad//russell ur bad//square up
+    turn_left90(); //henry ur bad//henry ur bad//henry ur bad//henry ur bad//henry ur bad
+    msleep(300); //henry ur bad//henry ur bad//henry ur bad//henry ur bad//henry ur bad
+    move(-1000, 400, change); //square up
     set_servo_position(claw, claw_open_medical);
     set_servo_position(arm, arm_down);
     msleep(300);
-    move(1000, 1000, change);//russell ur bad//russell ur bad//russell ur bad//russell ur bad//russell ur bad//russell ur bad
+    move(1000, 1000, change);//henry ur bad//henry ur bad//henry ur bad//henry ur bad//henry ur bad
     set_servo_position(claw, claw_close);
     msleep(500);
     set_servo_position(arm, arm_mid);
     msleep(300);
-    line_sense_grey(1000);//get to line
+    line_sense_grey(1000); //get to middle line
     turn_left90();
     msleep(1000);
     set_servo_position(arm, arm_down);
