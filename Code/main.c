@@ -1,4 +1,3 @@
-
 #include <kipr/botball.h>
 #include <drive.h>
 
@@ -205,7 +204,7 @@ void scanBuilding(){
     printf("scan done\n"); 
 }
 
-void line_follow(int dist, int speed) {	
+void line_follow(int dist, int speed) { 
     drive(speed, speed);
     long leftTarg = gmpc(MOT_LEFT) + 150 * dist;
     long rightTarg = gmpc(MOT_RIGHT) + 150 * dist;
@@ -221,7 +220,7 @@ void line_follow(int dist, int speed) {
     ao();
 }
 
-void line_follow_middle(int dist, int speed) {	
+void line_follow_middle(int dist, int speed) {  
     drive(speed, speed);
     long leftTarg = gmpc(MOT_LEFT) + 150 * dist;
     long rightTarg = gmpc(MOT_RIGHT) + 150 * dist;
@@ -237,7 +236,7 @@ void line_follow_middle(int dist, int speed) {
     ao();
 }
 
-void line_sense(int speed) {	
+void line_sense(int speed) {    
     drive(speed * SPD_L_F / MAX_SPEED, speed * SPD_R_F / MAX_SPEED);
     while (analog(left_light) < black || analog(right_light) < black) {
         if (analog(right_light) > black)
@@ -252,7 +251,7 @@ void line_sense(int speed) {
     ao();
 }
 
-void line_sense_grey(int speed) {	
+void line_sense_grey(int speed) {   
     drive(speed * SPD_L_F / MAX_SPEED, speed * SPD_R_F / MAX_SPEED);
     while (analog(left_light) < grey || analog(right_light) < grey) {
         if (analog(right_light) > grey){
@@ -330,13 +329,14 @@ int main(){
     msleep(300);
     move(1500, 500, change);
     move(1000, 400, change); 
+    //get medical supplies 
     set_servo_position(claw, claw_close); //grabs medical supplies 
     msleep(500);
     set_servo_position(arm, arm_up);
     msleep(300);
     line_sense_grey(1000); //get to middle line
     move(-1500, 500, change); 
-	turn_left90();
+    turn_left90();
     msleep(500);
     move(1500, 650, change);
     set_servo_position(arm, arm_down); 
@@ -361,6 +361,7 @@ int main(){
     msleep(500);
     move(-1500, 250, change); //backs up to prepare for camera  
     scanBuilding(); 
+    //drop off medical supplies 
     if(burning_building == 1){
         move(-1500, 200, change); //backs up a little to get in front of nonburning building 
         msleep(500);
@@ -370,7 +371,7 @@ int main(){
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
         msleep(1000);
         move(-1500, 150, change);
-        turn_left90(); 
+        turn_left90(); //faces firetruck 
         msleep(500);
     }
     else if(burning_building == 0){
@@ -383,32 +384,39 @@ int main(){
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
         msleep(1000);
         move(-1500, 300, change); 
-        turn_left90();
+        turn_left90(); //faces firetruck 
         msleep(500);
         move(1500, 1000, change); 
     }
+    //get firetruck 
     set_servo_position(claw, claw_open_firetruck); 
     move(1500, 500, change); 
     msleep(500);
-    slow_servo(claw, claw_close); 
+    slow_servo(claw, claw_close); //grabs firetruck 
+    //drop off firetruck
     if(burning_building == 0){
         move(-1500, 400, change); 
         turn_left90(); 
         msleep(500);
-        turn_left90();
+        turn_left90(); //turns to face forward
         msleep(500);
-        move(1500, 600, change); 
-        slow_servo(claw, claw_open_firetruck);        
+        move(1500, 600, change); //moves forward to non burning building 
+        slow_servo(claw, claw_open_firetruck);   
+        move(-1500, 1000, change);     
     }
     else if(burning_building == 1){
         move(-1500, 400, change); 
         turn_left90(); 
         msleep(500);
-        turn_left90();
+        turn_left90(); //turns to face forward 
         msleep(500);
+        move(1500, 200, change); //moves to non burning building 
+        slow_servo(claw, claw_open_firetruck); 
+        move(-1500, 300, change); 
         
     }
-	
+    //get ambulance 
+    
 
 
 
