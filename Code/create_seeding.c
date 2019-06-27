@@ -30,9 +30,9 @@ const int wristMiddle = 190;
 
 const int armUp = 0;
 const int armDown = -4030;
-const int armLevel = -3800;
+const int armLevel = -3710;
 const int armInitial = -3100;
-const int armMiddle = -1950; //1950
+const int armMiddle = -1860; //1950
 
 int timeWait = 0;
 int timeDone = 0;
