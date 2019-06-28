@@ -184,13 +184,13 @@ void scanBuilding(){
         mav(MOT_LEFT, 950);
         mav(MOT_RIGHT, 900);
         msleep(100);
-        if(gmpc(MOT_LEFT) > 4000){
+        if(gmpc(MOT_LEFT) > 2000){
             printf("scan time out\n");
             timeout = 1;
         }
     }
     ao();
-    if(gmpc(MOT_LEFT) < 2800){
+    if(gmpc(MOT_LEFT) < 2000){
         burning_building = 0; 
         printf("burning building is close\n");
     }
@@ -247,7 +247,7 @@ void line_sense(int speed) {
             drive(speed, speed);
         msleep(1);
     }
-    printf("line sensed\n");
+    printf("black line sensed\n");
     ao();
 }
 
@@ -265,7 +265,7 @@ void line_sense_grey(int speed) {
         }
         msleep(1);
     }
-    printf("line sensed\n");
+    printf("grey line sensed\n");
     ao();
 }
 
@@ -321,84 +321,99 @@ int main(){
     shut_down_in(119);
     //people and ambulance go on ground of nonburning building, medical supplies go on top of nonburning building
     //firetruck goes on ground of burning building, firefighter goes on top of burning building 
-    turn_left90(); 
+    turn_left90();
+    //left_turn(1500, 90); 
     msleep(300); 
     move(-1500, 400, change); //square up
     set_servo_position(claw, claw_open_medical);
     set_servo_position(arm, arm_down);
     msleep(300);
     move(1500, 500, change);
-    move(1000, 400, change); 
+    move(1000, 350, change); 
     //get medical supplies 
-    set_servo_position(claw, claw_close); //grabs medical supplies 
+    set_servo_position(claw, claw_close); //grabs medical supplies 1
     msleep(500);
     set_servo_position(arm, arm_up);
     msleep(300);
     line_sense_grey(1000); //get to middle line
-    move(-1500, 500, change); 
-    turn_left90();
+    move(-1500, 450, change); 
+    turn_left(1500, 600);
+    //left_turn(1500, 90);
     msleep(500);
-    move(1500, 650, change);
+    line_sense(1500); 
+    move(1500, 300, change);
     set_servo_position(arm, arm_down); 
     msleep(500);
+    //right_turn(1500, 90);
     turn_right90();
     msleep(500);
-    slow_servo(claw, claw_open_medical); //grabs medical supplies 
-    move(1500, 380, change); 
+    slow_servo(claw, claw_open_medical); //grabs medical supplies 2
+    move(1500, 250, change); 
     msleep(500);
     slow_servo(claw, claw_close);
     msleep(500);
     set_servo_position(arm, arm_up);
     msleep(500);
-    line_sense_grey(1000);
-    move(1500, 200, change);
-    turn_left90(); //turns onto middle line 
+    move(-1500, 100, change); 
+    line_sense_grey(1000); //squares up on line 
+    move(1500, 150, change);
+    //left_turn(1500, 90); //turns onto middle line 
+    turn_left90();
     msleep(500); 
-    line_follow_middle(30, 1000); 
-    move(1500, 5, change); 
+    line_follow_middle(25, 1000); 
+    move(1500, 95, change); 
     msleep(500);
-    turn_right90(); 
+    //right_turn(1500, 90); //turns right onto the black line by the building 
+    turn_right90();
     msleep(500);
-    move(-1500, 250, change); //backs up to prepare for camera  
+    //line_sense(-1000); //backs up to prepare for camera  
+    move(-1500, 150, change);
     scanBuilding(); 
     //drop off medical supplies 
     if(burning_building == 1){
         move(-1500, 200, change); //backs up a little to get in front of nonburning building 
         msleep(500);
-        turn_left90(); 
+        //left_turn(1500, 90); 
+        turn_left90();
         msleep(500);
         move(1500, 100, change);
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
         msleep(1000);
         move(-1500, 150, change);
-        turn_left90(); //faces firetruck 
+        //left_turn(1500, 90); //faces firetruck 
+        turn_left90();
         msleep(500);
     }
     else if(burning_building == 0){
         move(1500, 800, change); //moves forward to burning building 
         move(-1500, 40, change); 
         msleep(500);
+        //left_turn(1500, 90); 
         turn_left90(); 
         msleep(500);
-        move(1500, 100, change);
+        move(1500, 50, change);
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
         msleep(1000);
         move(-1500, 300, change); 
-        turn_left90(); //faces firetruck 
+        //left_turn(1500, 90); //faces firetruck
+        turn_left90();
         msleep(500);
-        move(1500, 1000, change); 
+        line_follow(80, 1500); 
+        msleep(500);
     }
     //get firetruck 
-    set_servo_position(claw, claw_open_firetruck); 
-    move(1500, 500, change); 
+    set_servo_position(claw, claw_open_firetruck);  
+    move(1500, 200, change); 
     msleep(500);
     slow_servo(claw, claw_close); //grabs firetruck 
     //drop off firetruck
     if(burning_building == 0){
         move(-1500, 400, change); 
+        //left_turn(1500, 90);
         turn_left90(); 
         msleep(500);
-        turn_left90(); //turns to face forward
+        //left_turn(1500, 90); //turns to face forward
+        turn_left90();
         msleep(500);
         move(1500, 600, change); //moves forward to non burning building 
         slow_servo(claw, claw_open_firetruck);   
@@ -406,16 +421,18 @@ int main(){
     }
     else if(burning_building == 1){
         move(-1500, 400, change); 
-        turn_left90(); 
+        //left_turn(1500, 90); 
+        turn_left90();
         msleep(500);
-        turn_left90(); //turns to face forward 
+        //left_turn(1500, 90); //turns to face forward 
+        turn_left90();
         msleep(500);
         move(1500, 200, change); //moves to non burning building 
         slow_servo(claw, claw_open_firetruck); 
         move(-1500, 300, change); 
-        
     }
     //get ambulance 
+    
     
 
 
