@@ -18,6 +18,11 @@ const int wristPin = 1;
 const int etPin = 0;
 const int btnPin = 0;
 const int lightPin = 1;
+const int tophatPin = 2;
+const int servoPin = 2;
+
+const int servoDown = 2047;
+const int servoUp = 1100;
 
 const int clawClose = 500;
 const int clawOpen = 1900;
@@ -42,6 +47,16 @@ void lineFollow(int speed, int time) {
     
     int anglechange = 0;
     for(i = 0; i < time; i++) { // gyro move
+        anglechange = get_create_rfcliff_amt()-1250;
+        create_drive_direct(speed+anglechange/15, speed-anglechange/15);
+        msleep(1);
+    }
+    create_stop();
+}
+
+void lineFollowDetect(int speed) {
+    int anglechange = 0;
+    while(get_create_rbump() == 0) {
         anglechange = get_create_rfcliff_amt()-1250;
         create_drive_direct(speed+anglechange/15, speed-anglechange/15);
         msleep(1);
@@ -141,6 +156,27 @@ void squareBlackLine() {
     thread_destroy(thread);
 }
 
+void detectBlackRightTwo() {
+	while(get_create_rcliff_amt() > 2200){
+    	create_drive_direct(0, 80);		//move to black line first
+    }
+    create_stop();
+}
+
+void squareBlackLineTwo() {
+    thread thread = thread_create(detectBlackRightTwo);
+    thread_start(thread);
+  	
+    while(get_create_lcliff_amt() > 2200){
+    	create_drive_direct(80, 0);		//move to black line first
+    }
+    
+    create_stop();
+    
+    thread_wait(thread);
+    thread_destroy(thread);
+}
+
 void detectBlackRightBack() {
     
 	while(get_create_rcliff_amt() > 2000){
@@ -172,6 +208,13 @@ void senseLine() {
 
 void senseLineBack() {
     while(get_create_lcliff_amt() > 2200){
+    	create_drive_direct(-180, -180);
+    }
+    create_stop();
+}
+
+void senseLineBackExternal() {
+	while(analog(tophatPin) < 1000){
     	create_drive_direct(-180, -180);
     }
     create_stop();
@@ -223,6 +266,8 @@ int main(){
     create_connect();
     printf("connected");
     
+    
+    
     // clear motor position
     while(digital(btnPin) == 0) {
         mrp(motorPin, 700, 10);
@@ -231,8 +276,39 @@ int main(){
     
     cmpc(motorPin);
     
+    // Start check
+    set_servo_position(wristPin, wristUp);
+   	set_servo_position(servoPin, servoUp);
+    slow_servo(clawPin, clawOpen);
+    msleep(100);
+    
+    msleep(200);
+    move(150, 40, change);
+    squareBlackLineTwo();
+    msleep(200);
+    move(150, 50, change);
+    msleep(100);
+    turnLeft(90);
+    msleep(200);
+    lineFollowDetect(160);
+    msleep(200);
+    move(-200, 285, change);
+    msleep(200);
+    turnRight(86);
+    msleep(200);
+    move(-200, 380, change);
+    msleep(200);
+    
+    // Pick up container
+    slow_servo(servoPin, servoDown);
+    msleep(200);
+    move(100, 400, change);
+    
+    // End of check
+    
     msleep(2000); // Sleep to check if up is right
     
+    set_servo_position(servoPin, servoUp);
     set_servo_position(wristPin, wristInitial);
     set_servo_position(clawPin, 900);
     moveArm(armInitial);
@@ -413,7 +489,7 @@ int main(){
     move(-180, 40, change);
     msleep(200);
     turnLeft(90);
-    senseLineBack();
+    senseLineBackExternal();
     moveArm(armUp);
     msleep(50);
     slow_servo(wristPin, 0);
@@ -433,7 +509,6 @@ int main(){
         msleep(50);
         moveArm(armMiddle+500);
         msleep(200);
-        //slow_servo(clawPin, clawOpen-500);
         
     } else if(burningBuilding == 1) {
         
@@ -448,14 +523,13 @@ int main(){
         msleep(200);
         slow_servo(wristPin, wristUp+100);
         msleep(300);
-        //slow_servo(clawPin, clawOpen-500);
         
     } else if(burningBuilding == 2) {
         
         msleep(50);
      	lineFollow(55, 100);
      	lineFollow(150, 250);
-     	move(200, 150, change);
+     	move(200, 60, change); // was 150
         msleep(200);
         turnRight(90);
         msleep(200);
@@ -463,9 +537,31 @@ int main(){
         msleep(50);
         slow_servo(wristPin, wristMiddle+100);
         msleep(50);
-        //slow_servo(clawPin, clawOpen-500);
     	
     }
+    
+    slow_servo(clawPin, clawOpen);
+    msleep(100);
+    moveArm(armUp);
+    
+    msleep(200);
+   // move(150, 60, change);
+    msleep(100);
+    turnLeft(90);
+    msleep(200);
+    lineFollowDetect(180);
+    msleep(200);
+    move(200, 300, change);
+    msleep(200);
+    turnRight(90);
+    msleep(200);
+    move(-200, 300, change);
+    msleep(200);
+    
+    // Pick up container
+    slow_servo(servoPin, servoDown);
+    msleep(200);
+    move(100, 400, change);
     
     create_disconnect();
     
