@@ -35,7 +35,7 @@ const int wristMiddle = 190;
 
 const int armUp = 0;
 const int armDown = -3860;
-const int armLevel = -4500;
+const int armLevel = -4300;
 const int armInitial = -3250;
 const int armMiddle = -2130; //1950 --> 1860
 
@@ -324,11 +324,11 @@ int main(){
         slow_servo(wristPin, 0);
         msleep(700);
         move(200, 300, change);
-        turnRight(150);
-        moveArm(armLevel);
+        turnRight(180);
+        moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         msleep(300);
-        turnLeft(150);
+        turnLeft(180);
         move(150, 135, change);
     }
     
@@ -362,7 +362,7 @@ int main(){
         move(200, 250, change);
     	msleep(300);
         turnRight(170);
-        moveArm(armLevel);
+        moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle+100);
@@ -380,7 +380,7 @@ int main(){
         msleep(100);
         set_servo_position(wristPin, wristMiddle);
         msleep(300);
-        move(-200, 270, change);
+        move(-200, 260, change);
         msleep(500);
         scanForItem(50);
         
@@ -391,14 +391,14 @@ int main(){
         set_servo_position(clawPin, clawClose);
         msleep(400);
         moveArm(gmpc(motorPin) + 1500);
-        msleep(850);
+        msleep(950);
         slow_servo(wristPin, 0);
         //slow_servo(wristPin, 0);
         msleep(400);
         move(200, 300, change);
         msleep(300);
         turnLeft(140);
-        moveArm(armLevel);
+        moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle);
@@ -439,7 +439,7 @@ int main(){
     // Sense block
     
     scanForItem(50);
-    turnRight(2);
+    turnRight(3);
     msleep(200);
     moveArm(armLevel + 300);
     msleep(200);
@@ -470,7 +470,7 @@ int main(){
         msleep(50);
      	lineFollow(55, 100);
      	lineFollow(150, 250);
-     	move(200, 920, change);
+     	move(200, 900, change);
         msleep(200);
         turnRight(90);
         msleep(200);
@@ -478,6 +478,7 @@ int main(){
         msleep(50);
         moveArm(armMiddle+500);
         msleep(200);
+        move(100, 40, change);
         
     } else if(burningBuilding == 1) {
         
@@ -498,7 +499,7 @@ int main(){
         msleep(50);
      	lineFollow(55, 100);
      	lineFollow(150, 250);
-     	move(200, 20, change); // was 150
+     	move(200, 7, change); // was 150
         msleep(200);
         turnRight(90);
         msleep(200);
@@ -516,7 +517,7 @@ int main(){
     moveArm(armUp);
     msleep(100);
     if(burningBuilding != 1) {
-    	move(-140, 120, change);
+    	move(-140, 130, change);
     }
     
     msleep(200);
