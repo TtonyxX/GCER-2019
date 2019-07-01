@@ -37,7 +37,7 @@ const int armUp = 0;
 const int armDown = -3860;
 const int armLevel = -4300;
 const int armInitial = -3250;
-const int armMiddle = -2130; //1950 --> 1860
+const int armMiddle = -2200; //1950 --> 1860
 
 int timeWait = 0;
 int timeDone = 0;
@@ -67,10 +67,10 @@ void lineFollowDetect(int speed) {
 int gyroCalibrate() {
     int changeGyroZ = 0;//find average gyro value when still
     int i = 0;
-    for(i = 0; i < 10000; i++) {
+    for(i = 0; i < 2000; i++) {
         changeGyroZ += gyro_x();
     }
-    changeGyroZ /= 10000;
+    changeGyroZ /= 2000;
    	return changeGyroZ;
 }
 
@@ -262,6 +262,7 @@ void slow_servo(int port, int pos) {
 
 int main(){
     change = gyroCalibrate();
+    //create_full();
     enable_servos();
     create_connect();
     printf("connected");
@@ -291,43 +292,43 @@ int main(){
     
     // Ready for Picking Up Things
     move(250, 250, change);
-    msleep(400);
+    msleep(100);
     senseLine();
-    msleep(400);
+    msleep(100);
     move(200, 120, change);
     msleep(100);
     set_servo_position(wristPin, wristMiddle-100);
     set_servo_position(clawPin, clawOpen);
     moveArm(armMiddle);
-    msleep(300);
+    msleep(200);
     turnLeft(160);
     msleep(100);
   
     // Raising up for first sense/pick up
    	move(-150, 145, change);
-    msleep(600);
+    msleep(500);
     if(scanForItem(20) == 0) {
 		// First one is burning
         burningBuilding = 0;
         move(200, 300, change);
     } else {
     	set_servo_position(wristPin, wristMiddle);
-        msleep(500);
+        msleep(400);
         turnRight(2);
         msleep(100);
    		move(-150, 135, change);
-        msleep(500);
+        msleep(400);
     	set_servo_position(clawPin, clawClose);
         msleep(800);
         moveArm(gmpc(motorPin) + 1500);
         msleep(850);
         slow_servo(wristPin, 0);
-        msleep(700);
+        msleep(600);
         move(200, 300, change);
         turnRight(180);
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
-        msleep(300);
+        msleep(250);
         turnLeft(180);
         move(150, 135, change);
     }
@@ -338,9 +339,9 @@ int main(){
     msleep(200);
     set_servo_position(wristPin, wristUp+70);
     turnLeft(35);
-    msleep(300);
+    msleep(200);
     move(-200, 387/*390*/, change);
-    msleep(500);
+    msleep(400);
     if(scanForItem(45) == 0) {
 		// Second one is burning
         burningBuilding = 1;
@@ -353,7 +354,7 @@ int main(){
         msleep(500);
    		move(-150, 170, change);
         msleep(500);
-    	set_servo_position(clawPin, clawClose-300);
+    	set_servo_position(clawPin, clawClose-100);
         msleep(400);
         moveArm(armUp);
         msleep(600);
@@ -376,7 +377,7 @@ int main(){
     if(burningBuilding != 2) {
    	
         turnLeft(40);
-        moveArm(armMiddle);
+        moveArm(armMiddle+250);
         msleep(100);
         set_servo_position(wristPin, wristMiddle);
         msleep(300);
@@ -384,7 +385,7 @@ int main(){
         msleep(500);
         scanForItem(50);
         
-        turnRight(0);
+        turnRight(1);
         msleep(500);
         move(-150, 100, change);
         msleep(500);
@@ -451,7 +452,7 @@ int main(){
     
    	turnRight(115);
     msleep(200);
-    move(-200, 320, change);
+    move(-200, 335, change);
     msleep(200);
     squareBlackLineBack();
     msleep(200);
@@ -478,7 +479,7 @@ int main(){
         msleep(50);
         moveArm(armMiddle+500);
         msleep(200);
-        move(100, 40, change);
+        move(100, 65, change);
         
     } else if(burningBuilding == 1) {
         
@@ -499,7 +500,6 @@ int main(){
         msleep(50);
      	lineFollow(55, 100);
      	lineFollow(150, 250);
-     	move(200, 7, change); // was 150
         msleep(200);
         turnRight(90);
         msleep(200);
@@ -507,6 +507,7 @@ int main(){
         msleep(50);
         slow_servo(wristPin, wristMiddle);
         msleep(50);
+        move(100, 65, change);
     	
     }
     
@@ -523,10 +524,11 @@ int main(){
     msleep(200);
     squareBlackLineTwo();
     msleep(200);
-    move(150, 50, change);
+    move(150, 60, change);
     msleep(100);
     turnLeft(90);
     msleep(200);
+    lineFollow(165, 500);
     lineFollowDetect(160);
     msleep(200);
     move(-200, 280, change);
