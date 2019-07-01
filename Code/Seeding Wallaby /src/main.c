@@ -1,5 +1,7 @@
 #include <kipr/botball.h>
 #include <drive.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 int camData[4];
 int burning_building; //close building is 0, further building is 1 
@@ -8,28 +10,32 @@ int timeout; //if camera does not sense burning timeout will be set to 1
 #define claw 0
 #define arm 1
 #define arm_start 2000
-#define arm_down 0
+#define arm_down 70
 #define arm_up 2047
 #define arm_mid 700
 #define claw_open_people 530
-#define claw_open_firetruck 950
+#define claw_open_firetruck 1050
 #define claw_open_medical 850
 #define claw_open_fireman 1000
 #define claw_close 100
 #define claw_start 350
 #define left_light 0
 #define right_light 1
-#define black 3500
+#define black 4000
 #define white 2500
-#define grey 3500
+#define grey 3700
+#define THRESHOLD 3870 //need to change to 3600 during the day, 3800 at night
 
-int gyrocalibrate() {
-    int changeGyroZ = 0;//find average gyro value when still
+int left_motor = 1;
+int right_motor = 0;
+
+double gyrocalibrate() {
+    double changeGyroZ = 0;//find average gyro value when still
     int i = 0;
-    for(i = 0; i < 5000; i++) {
+    for(i = 0; i < 2000; i++) {
         changeGyroZ += gyro_z();
     }
-    changeGyroZ /= 5000;
+    changeGyroZ /= 2000;
 
     return changeGyroZ;
 }
@@ -47,9 +53,9 @@ void move(int speed, int time, int changeGyroZ) {//speed -100 to 100, time is in
     ao();
 }*/
 
-void move(int speed, int time, int changeGyroZ) {//speed -1500 to 1500, time is in miliseconds
+void move(int speed, int time, double changeGyroZ) {//speed -1500 to 1500, time is in miliseconds
     int i = 0;
-    int anglechange = 0;
+    double anglechange = 0;
     for(i = 0; i < time; i++) {//gyro move
         anglechange += gyro_z()-changeGyroZ;
         mav(MOT_LEFT, speed+anglechange/10);
@@ -60,7 +66,7 @@ void move(int speed, int time, int changeGyroZ) {//speed -1500 to 1500, time is 
 }
 
 
-void turn(int direction, int degree, int changeGyroZ) {
+/*void turn(int direction, int degree, int changeGyroZ) {
     int i = 0;
     int anglechange = 0;
     int x = degree*57000/90;
@@ -91,24 +97,24 @@ void turn(int direction, int degree, int changeGyroZ) {
     }
     ao();
 }
-
-void turn90(int direction, int changeGyroZ) {
-    int anglechange = 0;
-    int x = 90*270000/90;
-    x /= 50;
+*/
+void turn(int direction, int degree, int changeGyroZ) {
+    double anglechange = 0;
+    int x = degree*270000/90;
+    x /= 10;
     if(direction == 1) { // 1 = left, 0 = right
         while(anglechange > -x) {
             anglechange -= gyro_z()-changeGyroZ;
             motor(0, 100);
             motor(1, -100);
-            msleep(50);
+            msleep(10);
         }
     } else {
         while(anglechange < x) {
             anglechange -= gyro_z()-changeGyroZ;
             motor(0, -100);
             motor(1, 100);
-            msleep(50);
+            msleep(10);
         }
     }
     ao();
@@ -186,13 +192,13 @@ void scanBuilding(){
         mav(MOT_LEFT, 950);
         mav(MOT_RIGHT, 900);
         msleep(100);
-        if(gmpc(MOT_LEFT) > 2200){
+        if(gmpc(MOT_LEFT) > 1000){
             printf("scan time out\n");
             timeout = 1;
         }
     }
     ao();
-    if(gmpc(MOT_LEFT) < 2200){
+    if(gmpc(MOT_LEFT) < 1000){
         burning_building = 0; 
         printf("burning building is close\n");
     }
@@ -284,6 +290,15 @@ void slow_servo(int port, int pos) {
     }
 }
 
+/*void slow_servo(int port, int start, int end) {
+    int i = 0;
+    for(i; i < 30; i++) {
+        start += (end - start)/30;
+        set_servo_position(port, start);        
+        msleep(100);
+    }
+}
+*/
 void turn_left(int speed, int time){
     mav(MOT_LEFT, -speed);
     mav(MOT_RIGHT, speed);
@@ -301,7 +316,7 @@ void turn_right(int speed, int time){
 void turn_left90(){
     mav(MOT_LEFT, -1500);
     mav(MOT_RIGHT, 1500);
-    msleep(615);
+    msleep(575);
     ao();
 }
 
@@ -311,20 +326,194 @@ void turn_right90(){
     msleep(615);
     ao();
 }
+/*
+void calibrate_gyro()
+{
+    //takes the average of 50 readings
+    int i = 0;
+    double avg = 0;
+    while(i < 50)
+    {
+        avg += gyro_z();
+        msleep(1);
+        i++;
+    }
+    bias = avg / 50.0;
+    printf("New Bias: %f\n", bias);//prints out your bias. COMMENT THIS LINE OUT IF YOU DON'T WANT BIAS READINGS PRINTED OUT
+}
+
+//the same as calibrate_gyro() except faster to type
+void cg()
+{
+    calibrate_gyro();
+}
+
+//turns the robot to reach a desired theta. 
+//If you are expecting this function to work consistantly then don't take your turns too fast.
+//The conversions from each wallaby to normal degrees varies but usually ~580000 KIPR degre80000 KIPR degrees = 90 degrees
+void turn_with_gyro(int left_wheel_speed, int right_wheel_speed, double targetTheta)
+{
+    double theta = 0;//declares the variable that stores the current degrees
+    mav(right_motor, right_wheel_speed);//starts the motors
+    mav(left_motor, left_wheel_speed);
+    //keeps the motors running until the robot reaches the desired angle
+    while(theta < targetTheta)
+    {
+        msleep(10);//turns for .01 seconds
+        theta += abs(gyro_z() - bias) * 10;//theta = omega(angular velocity, the value returned by gyroscopes) * time
+       // printf("%d", theta);
+    }
+
+    //stops the motors after reaching the turn
+    mav(right_motor, 0);
+    mav(left_motor, 0);
+}
+
+//drives straight forward or backwards. The closer speed is to 0 the faster it will correct itself and the more consistent it will be but just do not go at max speed. Time is in ms. 
+void drive_with_gyro(int speed, double time)
+{ 
+    double startTime = seconds();
+    double theta = 0;
+    while(seconds() - startTime < (time / 1000.0))
+    {
+        if(speed > 0)
+        {
+            mav(right_motor, (double)(speed - speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));  //here at NAR, we are VERY precise
+            mav(left_motor, (double)(speed + speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));
+        }
+        else//reverses corrections if it is going backwards
+        {
+            mav(right_motor, (double)(speed + speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4)))); 
+            mav(left_motor, (double)(speed - speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));
+        }
+        //updates theta
+        msleep(10);
+        theta += (gyro_z() - bias) * 10;
+    }
+}
+
+void simple_drive_with_gyro(int speed, double time)
+{
+    double startTime = seconds(); //used to keep track of time
+    double theta = 0; //keeps track of how much the robot has turned
+    while(seconds() - startTime < time)
+    {
+        //if the robot is essentially straight then just drive straight
+        if(theta < 1000 && theta > -1000)
+        {
+            mav(right_motor, speed);
+            mav(left_motor, speed);
+        }
+        //if the robot is off to the right then drift to the left
+        else if(theta < 1000)
+        {
+            mav(right_motor, speed + 100);
+            mav(left_motor, speed - 100);
+        }
+        //if the robot is off to the left then drift to the right
+        else
+        {
+            mav(right_motor, speed - 100);
+            mav(left_motor, speed + 100);
+        }
+        //updates theta
+        msleep(10);
+        theta += (gyro_z() - bias) * 10;
+    }
+}
+
+//keeps driving until detects black line
+void gyro_light_stop(int speed)
+{ 
+    //double startTime = seconds();
+    double theta = 0;
+    while(analog(left_light) < THRESHOLD)
+    {
+        if(speed > 0)
+        {
+            mav(right_motor, (double)(speed - speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));  //here at NAR, we are VERY precise
+            mav(left_motor, (double)(speed + speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));
+        }
+        else//reverses corrections if it is going backwards
+        {
+            mav(right_motor, (double)(speed + speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4)))); 
+            mav(left_motor, (double)(speed - speed * (1.920137e-16 + 0.000004470956*theta - 7.399285e-28*pow(theta, 2) - 2.054177e-18*pow(theta, 3) + 1.3145e-40*pow(theta, 4))));
+        }
+        //updates theta
+        msleep(10);
+        theta += (gyro_z() - bias) * 10;
+    }
+}
+
+//moves servo slowly
+void slow_servo(int start, int end) {
+    int i = 0;
+    for(i; i < 30; i++) {
+        start += (end - start)/30;
+        set_servo_position(0, start);        
+        msleep(100);
+    }
+}
+
+void square_up_black_line () {
+    while (analog(left_light) < THRESHOLD || analog(right_light) < THRESHOLD) {
+        if(analog(left_light) < THRESHOLD && analog(right_light) < THRESHOLD) {
+            mav(1, -200);
+            mav(0, -200);
+            msleep(1);
+        }
+
+        else if(analog(left_light) < THRESHOLD && analog(right_light) > THRESHOLD) {
+            mav(1, 200);
+            mav(0, -200);
+            msleep(1);
+        }
+        else if (analog(left_light) > THRESHOLD && analog(right_light) < THRESHOLD) {
+            mav(1, -200);
+            mav(0, 200);
+            msleep(1);
+        } 
+    }
+    mav(0, 0);
+    mav(1, 0);
+}       
+
+void square_up_black_line_2 () {
+    while (LIGHT_0 < THRESHOLD || LIGHT_1 < THRESHOLD) {
+        if(LIGHT_0 < THRESHOLD && LIGHT_1 < THRESHOLD) {
+            mav(1, -150);
+            mav(0, -150);
+            msleep(1);
+        }
+        else if(LIGHT_0 < THRESHOLD && LIGHT_1 > THRESHOLD) {
+            mav(1, 150);
+            mav(0, -150);
+            msleep(1);
+        }
+        else if (LIGHT_0 > THRESHOLD && LIGHT_1 < THRESHOLD) {
+            mav(1, -150);
+            mav(0, 150);
+            msleep(1);
+        } 
+    }
+    mav(0, 0);
+    mav(1, 0);
+}   
+*/
 
 int main(){
     //wallaby starts in the left corner against the back with claw closed facing towards create
     //servo starting positions
     set_servo_position(claw, claw_start);
     set_servo_position(arm, arm_start);
-    int change = gyrocalibrate();
+    double change = gyrocalibrate();
     enable_servos();
     msleep(1000);
     shut_down_in(119);
     //people and ambulance go on ground of nonburning building, medical supplies go on top of nonburning building
     //firetruck goes on ground of burning building, firefighter goes on top of burning building 
     //turn_left90();
-    turn90(1, change); 
+    turn(1, 90, change); 
     msleep(500); 
     move(-1500, 400, change); //square up
     set_servo_position(claw, claw_open_medical);
@@ -332,141 +521,144 @@ int main(){
     msleep(300);
     move(1500, 550, change);
     line_sense_grey(500);
-    move(-1500, 10, change); 
+    //move(1500, 10, change); 
     //get medical supplies 
-    set_servo_position(claw, claw_close); //grabs medical supplies 1
+    //set_servo_position(claw, claw_close); //grabs medical supplies 1
     msleep(500);
-    set_servo_position(arm, arm_up);
+    //set_servo_position(arm, arm_mid);
+    move(1500, 125, change); 
+    turn(1, 90, change);
+    msleep(500);
+    set_servo_position(arm, arm_down);
     msleep(300);
-    line_sense_grey(500); //get to middle line
-    move(-1500, 200, change); 
-    line_sense(-500);
-    move(-1500, 100, change); 
-    //turn_left(1500, 570); 
-    turn90(1, change);
-    msleep(500);
-    line_sense(500); 
-    move(1500, 280, change);
-    set_servo_position(arm, arm_down); 
-    msleep(500);
-    //right_turn(1500, 90);
-    turn90(0, change);
-    msleep(500);
-    slow_servo(claw, claw_open_medical); 
-    move(1500, 350, change); 
-    msleep(500);
-    slow_servo(claw, claw_close); //grabs medical supplies 2
-    msleep(500);
-    set_servo_position(arm, arm_up);
-    msleep(500);
-    move(-1500, 100, change); 
-    line_sense_grey(1000); //squares up on line 
-    move(1500, 150, change);
-    //turn_left90(); //turns onto middle line
-    turn90(1, change); 
-    msleep(500); 
-    line_follow_middle(25, 800); 
-    move(1500, 100, change); 
-    msleep(500);
+    slow_servo(claw, claw_open_medical);
+    line_follow_middle(40, 1000); 
+    slow_servo(claw, claw_close);
+    while(analog(left_light) < black){
+        move(750, 1, change); 
+    }
+    move(-1500, 50, change); 
+    //set_servo_position(arm, arm_mid);
+    msleep(300);
     //turn_right90(); //turns right onto the black line by the building 
-    turn90(0, change); 
+    turn(0, 90, change);
     msleep(500);
-    move(-1500, 175, change);
-    line_sense(-500); //backs up to prepare for camera  
+    //move(-1500, 175, change);
+    //line_sense(-500); //backs up to prepare for camera  
     scanBuilding(); 
     //drop off medical supplies 
     if(burning_building == 1){
-        move(-1500, 100, change); //backs up a little to get in front of nonburning building 
+        move(-1500, 150, change); //backs up a little to get in front of nonburning building 
         msleep(500);
-        //turn_left90();
-        turn90(1, change);
+        //move(1500, 50, change);
+        turn(1, 30, change);
         msleep(500);
-        move(1500, 50, change);
+        move(1500, 50, change); 
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
-        msleep(1000);
-        move(-1500, 150, change);
+        //move(-1500, 150, change);  
+        msleep(500); 
+        move(-1500, 100, change);
+        msleep(500);
+        slow_servo(arm, arm_up); 
+        msleep(500); 
+        turn(0, 30, change);
+        msleep(500);
+        //move(-1500, 150, change); 
         //turn_left90(); //faces firetruck
-        turn90(1, change);
+        msleep(500);
+        turn(0, 90, change);
+        msleep(500);
+        move(-1500, 80, change);
+        turn(0, 90, change);
         msleep(500);
     }
     else if(burning_building == 0){
-        move(1500, 830, change); //moves forward to burning building 
+        move(1500, 700, change); //moves forward to burning building 
         move(-1500, 25, change); 
-        msleep(500);
-        //turn_left90(); 
-        turn90(1, change);
         msleep(500);				
-        move(1500, 50, change);
+        //move(1500, 50, change);
+        turn_left(1500, 300); 
+        msleep(500);
+        move(1500, 50, change); 
         slow_servo(claw, claw_open_medical); //drops off medical supplies 
-        msleep(1000);
-        move(-1500, 150, change); 
-        //turn_left90(); //faces firetruck
-        turn90(1, change);
+        //set_servo_position(claw, claw_close);
         msleep(500);
-        line_follow(20, 1000); 
-        move(1500, 500, change); 
+        slow_servo(arm, arm_up); 
+        msleep(500); 
+        move(-1500, 300, change);
+        turn_right(1500, 300);
         msleep(500);
+        line_sense(-750); 
+        msleep(500);
+        turn(0, 90, change);
+        msleep(500); 
+        move(-1500, 420, change); 
+        turn(0, 90, change); 
+        msleep(500); 
     }
     //get firetruck 
-    set_servo_position(claw, claw_open_firetruck);  
+    //move(-1500, 50, change); 
+    msleep(500); 
+    slow_servo(claw, claw_open_firetruck);  
     msleep(500); 
     set_servo_position(arm, arm_down);
-    line_sense(500);
+    msleep(500); 
     move(1500, 200, change); 
     msleep(500);
-    set_servo_position(claw, claw_close); //grabs firetruck 
+    slow_servo(claw, claw_close); //grabs firetruck 
     msleep(500); 
     //drop off firetruck
     if(burning_building == 0){
         move(-1500, 300, change); 
         //turn_left90(); 
-        turn90(1, change);
+        turn(1, 90, change);
         msleep(500);
         //turn_left90(); //turns to face forward
-        turn90(1, change);
+        turn(1, 90, change);
         msleep(500);
         move(1500, 600, change); //moves forward to non burning building 
-        turn_left(1500, 100); 
+        turn_left(1500, 300); 
         msleep(500);
         slow_servo(claw, claw_open_firetruck); 
         msleep(500);
         move(-1500, 150, change);
-        turn_right(1500, 100);
+        turn_right(1500, 300);
         msleep(200);
         move(-1500, 900, change);     
     }
     else if(burning_building == 1){
-        move(-1500, 300, change); 
+        move(-1500, 200, change); 
+        line_sense(-750); 
         //turn_left90();
-        turn90(1, change);
+        turn(1, 90, change);
         msleep(500);
         //left_turn(1500, 90); //turns to face forward 
-        turn_left90();
+        turn(1, 90, change);
         msleep(500);
         move(1500, 200, change); //moves to non burning building 
-        turn_left(1500, 100); 
+        turn_left(1500, 300); 
         msleep(300);
         slow_servo(claw, claw_open_firetruck); 
         msleep(500);
         move(-1500, 150, change);
-        turn_right(1500, 100);
+        turn_right(1500, 00);
         msleep(300);
         move(-1500, 200, change); 
     }
     //get fireman
     msleep(500);
     //turn_right90();
-    turn90(0, change); 
+    turn(0, 90, change); 
     msleep(500);
     //turn_right90();
-    turn90(0, change); 
+    turn(0, 90, change);
     msleep(500);
-    move(1500, 250, change);
+    move(1500, 400, change);
     //turn_right90();
-    turn90(0, change); 
+    turn(0, 90, change);
     msleep(500); 
     set_servo_position(claw, claw_open_fireman); 
-    move(1500, 100, change);
+    move(1500, 300, change);
     msleep(500); 
     set_servo_position(claw, claw_close);
     msleep(500); 
