@@ -305,7 +305,7 @@ int main(){
     msleep(100);
   
     // Raising up for first sense/pick up
-   	move(-150, 145, change);
+   	move(-150, 140, change);
     msleep(500);
     if(scanForItem(20) == 0) {
 		// First one is burning
@@ -316,7 +316,7 @@ int main(){
         msleep(400);
         turnRight(2);
         msleep(100);
-   		move(-150, 135, change);
+   	move(-150, 120, change);
         msleep(400);
     	set_servo_position(clawPin, clawClose);
         msleep(800);
