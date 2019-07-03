@@ -282,8 +282,11 @@ int main(){
     set_servo_position(clawPin, 900);
     moveArm(armInitial);
     
+    slow_servo(servoPin, 0);//bin gripper down
+    
     msleep(1000); // Light sense here
     //lightSense();
+    shut_down_in(119);
      
     turnLeft(110);
     
@@ -299,7 +302,7 @@ int main(){
     msleep(100);
     set_servo_position(wristPin, wristMiddle-100);
     set_servo_position(clawPin, clawOpen);
-    moveArm(armMiddle);
+    moveArm(armMiddle + 100);
     msleep(200);
     turnLeft(160);
     msleep(100);
@@ -316,7 +319,7 @@ int main(){
         msleep(400);
         turnRight(2);
         msleep(100);
-   	move(-150, 120, change);
+   		move(-150, 120, change);
         msleep(400);
     	set_servo_position(clawPin, clawClose);
         msleep(800);
@@ -479,7 +482,7 @@ int main(){
         msleep(50);
         moveArm(armMiddle+500);
         msleep(200);
-        move(100, 65, change);
+        move(100, 55, change);
         
     } else if(burningBuilding == 1) {
         
@@ -494,6 +497,7 @@ int main(){
         msleep(200);
         slow_servo(wristPin, wristUp+100);
         msleep(300);
+        move(100, 65, change);
         
     } else if(burningBuilding == 2) {
         
@@ -507,7 +511,7 @@ int main(){
         msleep(50);
         slow_servo(wristPin, wristMiddle);
         msleep(50);
-        move(100, 65, change);
+        move(100, 55, change);
     	
     }
     
@@ -523,6 +527,7 @@ int main(){
     
     msleep(200);
     squareBlackLineTwo();
+    msleep(200);
     msleep(200);
     move(150, 60, change);
     msleep(100);
