@@ -552,7 +552,7 @@ int main(){
     turn(1, tv-15, change);
     msleep(500);
     slow_servo(claw, claw_open_medical);
-	scanBuilding(change); 
+    scanBuilding(change); 
     //drop off medical supplies 
     if(burning_building == 1){
         
@@ -573,10 +573,10 @@ int main(){
         msleep(200); 
         turn(0, 90, change); 
         msleep(500);
-        move(1500, 620, change); //moves forward to burning building 
+        move(1500, 500, change); //moves forward to burning building 
         move(-1500, 25, change); 
         msleep(500);				
-        turn_left(1500, 300); 
+        turn(1, 30, change);  
         msleep(500);
         move(1500, 100, change); 
         slow_servo(claw, claw_open_medical); //drops off medical supplies and ambulance 
@@ -585,7 +585,7 @@ int main(){
         msleep(200);
         slow_servo(arm, arm_up);
         msleep(200);
-        turn_right(1500, 300);
+        turn_right(0, 30, change);
         msleep(500);
         line_sense(-1000); 
         msleep(500);
