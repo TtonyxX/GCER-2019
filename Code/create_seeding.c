@@ -23,8 +23,8 @@ const int servoPin = 2;
 
 const int servoDown = 2047;
 const int servoUp = 1100;
-
-const int clawClose = 500;
+  
+const int clawClose = 800;
 const int clawOpen = 1900;
 const int clawCloseWater = 850;
 
@@ -35,7 +35,7 @@ const int wristMiddle = 190;
 
 const int armUp = 0;
 const int armDown = -3860;
-const int armLevel = -4300;
+const int armLevel = -4200;
 const int armInitial = -3250;
 const int armMiddle = -2200; //1950 --> 1860
 
@@ -126,11 +126,11 @@ int scanForItem(int times) {
 void moveArm(int pos) {
     
     while(gmpc(motorPin) > pos) {
-		move_to_position(motorPin, 1100, gmpc(motorPin) - 10);
+		move_to_position(motorPin, 1600, gmpc(motorPin) - 10);
     }
     
     while(gmpc(motorPin) < pos) {
-		move_to_position(motorPin, 1100, gmpc(motorPin) + 10);
+		move_to_position(motorPin, 1600, gmpc(motorPin) + 10);
     }
     
 }
@@ -238,6 +238,12 @@ void lightSense() {
     }
 }
 
+void waitButton() {
+    while(right_button() == 0) {
+        msleep(2);
+    }
+}
+
 void slow_servo(int port, int pos) {
     
     while(get_servo_position(port) > pos) {
@@ -262,7 +268,7 @@ void slow_servo(int port, int pos) {
 
 int main(){
     change = gyroCalibrate();
-    //create_full();
+    create_full();
     enable_servos();
     create_connect();
     printf("connected");
@@ -282,13 +288,16 @@ int main(){
     set_servo_position(clawPin, 900);
     moveArm(armInitial);
     
-    slow_servo(servoPin, 0);//bin gripper down
+    slow_servo(servoPin, 0); //bin gripper down
     
     msleep(1000); // Light sense here
     //lightSense();
+    waitButton();
     shut_down_in(119);
-     
-    turnLeft(110);
+    
+    turnRight(90);
+    msleep(2600);
+    turnRight(150);
     
     move(-200, 200, change);
     msleep(100);
@@ -302,8 +311,8 @@ int main(){
     msleep(100);
     set_servo_position(wristPin, wristMiddle-100);
     set_servo_position(clawPin, clawOpen);
-    moveArm(armMiddle + 100);
-    msleep(200);
+    moveArm(armMiddle);
+    msleep(100);
     turnLeft(160);
     msleep(100);
   
@@ -320,18 +329,18 @@ int main(){
         turnRight(2);
         msleep(100);
    		move(-150, 120, change);
-        msleep(400);
+        msleep(200);
     	set_servo_position(clawPin, clawClose);
-        msleep(800);
+        msleep(300);
         moveArm(gmpc(motorPin) + 1500);
-        msleep(850);
+        msleep(800);
         slow_servo(wristPin, 0);
-        msleep(600);
+        msleep(400);
         move(200, 300, change);
         turnRight(180);
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
-        msleep(250);
+        msleep(200);
         turnLeft(180);
         move(150, 135, change);
     }
@@ -339,12 +348,12 @@ int main(){
     // Moving and second pick up
     
     moveArm(armUp-300);
-    msleep(200);
+    msleep(100);
     set_servo_position(wristPin, wristUp+70);
     turnLeft(35);
-    msleep(200);
+    msleep(100);
     move(-200, 387/*390*/, change);
-    msleep(400);
+    msleep(300);
     if(scanForItem(45) == 0) {
 		// Second one is burning
         burningBuilding = 1;
@@ -354,24 +363,24 @@ int main(){
     } else {
     	set_servo_position(wristPin, wristUp+100);
         turnRight(3);
-        msleep(500);
+        msleep(200);
    		move(-150, 170, change);
-        msleep(500);
+        msleep(200);
     	set_servo_position(clawPin, clawClose-100);
-        msleep(400);
+        msleep(200);
         moveArm(armUp);
-        msleep(600);
+        msleep(200);
         slow_servo(wristPin, 0);
-        msleep(400);
+        msleep(200);
         move(200, 250, change);
-    	msleep(300);
+    	msleep(100);
         turnRight(170);
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle+100);
    		move(-150, 160, change);
-        msleep(500);
+        msleep(300);
         turnLeft(170);
     }
     
@@ -383,30 +392,30 @@ int main(){
         moveArm(armMiddle+250);
         msleep(100);
         set_servo_position(wristPin, wristMiddle);
+        msleep(200);
+        move(-200, 250, change);
         msleep(300);
-        move(-200, 260, change);
-        msleep(500);
         scanForItem(50);
         
         turnRight(1);
-        msleep(500);
+        msleep(300);
         move(-150, 100, change);
-        msleep(500);
+        msleep(300);
         set_servo_position(clawPin, clawClose);
-        msleep(400);
+        msleep(300);
         moveArm(gmpc(motorPin) + 1500);
-        msleep(950);
+        msleep(800);
         slow_servo(wristPin, 0);
         //slow_servo(wristPin, 0);
-        msleep(400);
-        move(200, 300, change);
         msleep(300);
+        move(200, 300, change);
+        msleep(200);
         turnLeft(140);
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
         moveArm(armMiddle);
-        msleep(500);
+        msleep(300);
         turnRight(90);
         
     } else {
@@ -417,8 +426,10 @@ int main(){
     
     // Square up near block
     if(burningBuilding == 2) {
+   		msleep(10000);
 		move(-200, 940, change);
     } else {
+   		msleep(10000);
         move(-200, 800, change);
     }
     msleep(200);
@@ -436,31 +447,32 @@ int main(){
     
     moveArm(armLevel + 950);
     set_servo_position(wristPin, wristDown);
-    msleep(200);
+    msleep(100);
     turnLeft(40);
-    msleep(300);
+    msleep(100);
     
     // Sense block
     
     scanForItem(50);
     turnRight(3);
-    msleep(200);
+    msleep(100);
     moveArm(armLevel + 300);
-    msleep(200);
+    msleep(100);
     set_servo_position(clawPin, clawCloseWater);
-    msleep(200);
+    msleep(100);
     moveArm(armUp);
+    msleep(1200);
     
     // Move to the burning building
     
    	turnRight(115);
-    msleep(200);
+    msleep(100);
     move(-200, 335, change);
-    msleep(200);
+    msleep(100);
     squareBlackLineBack();
-    msleep(200);
+    msleep(100);
     move(-180, 40, change);
-    msleep(200);
+    msleep(100);
     turnLeft(90);
     senseLineBackExternal();
     moveArm(armUp);
@@ -475,13 +487,13 @@ int main(){
      	lineFollow(55, 100);
      	lineFollow(150, 250);
      	move(200, 900, change);
-        msleep(200);
+        msleep(100);
         turnRight(90);
-        msleep(200);
+        msleep(100);
         slow_servo(wristPin, wristMiddle);
         msleep(50);
         moveArm(armMiddle+500);
-        msleep(200);
+        msleep(100);
         move(100, 55, change);
         
     } else if(burningBuilding == 1) {
@@ -492,11 +504,11 @@ int main(){
      	move(200, 470, change);
         msleep(200);
         turnRight(90);
-        msleep(200);
+        msleep(100);
         move(-150, 150, change);
-        msleep(200);
+        msleep(100);
         slow_servo(wristPin, wristUp+100);
-        msleep(300);
+        msleep(200);
         move(100, 65, change);
         
     } else if(burningBuilding == 2) {
@@ -504,9 +516,9 @@ int main(){
         msleep(50);
      	lineFollow(55, 100);
      	lineFollow(150, 250);
-        msleep(200);
+        msleep(100);
         turnRight(90);
-        msleep(200);
+        msleep(100);
         moveArm(armMiddle + 500);
         msleep(50);
         slow_servo(wristPin, wristMiddle);
@@ -525,23 +537,22 @@ int main(){
     	move(-140, 130, change);
     }
     
-    msleep(200);
+    msleep(100);
     squareBlackLineTwo();
-    msleep(200);
-    msleep(200);
+    msleep(100);
     move(150, 60, change);
     msleep(100);
     turnLeft(90);
-    msleep(200);
-    lineFollow(165, 500);
-    lineFollowDetect(160);
-    msleep(200);
+    msleep(100);
+    lineFollow(180, 500);
+    lineFollowDetect(230);
+    msleep(100);
     move(-200, 280, change);
-    msleep(200);
+    msleep(100);
     turnRight(90);
-    msleep(200);
+    msleep(100);
     move(-200, 380, change);
-    msleep(200);
+    msleep(100);
     
     // Pick up container
     slow_servo(servoPin, servoDown);
