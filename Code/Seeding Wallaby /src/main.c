@@ -11,10 +11,10 @@ int counter;
 #define light 2
 #define arm_start 400
 #define arm_down 1415
-#define arm_down_people 1360
+#define arm_down_people 1320
 #define arm_up 800
 #define arm_mid 700
-#define claw_open_people 1010
+#define claw_open_people 945
 #define claw_open_firetruck 1750
 #define claw_open_medical 1500
 #define claw_open_fireman 1700
@@ -25,7 +25,7 @@ int counter;
 #define right_light 1
 #define black 3900
 #define white 2500
-#define grey 3700
+#define grey 3600
 #define tv 90  //in degrees, adjust before running
 
 double gyrocalibrate() {
@@ -207,10 +207,10 @@ void line_follow_middle_two(int dist, int speed) {
     long leftTarg = gmpc(MOT_LEFT) + 150 * dist;
     long rightTarg = gmpc(MOT_RIGHT) + 150 * dist;
     while (gmpc(MOT_RIGHT) < rightTarg || gmpc(MOT_LEFT) < leftTarg) {
-        if (analog(left_light) > black)
-            drive(speed * .85, speed * 1.15);
-        else if (analog(right_light) > grey)
+        if (analog(left_light) < black)
             drive(speed * 1.15, speed * .85);
+        else if (analog(right_light) > grey)
+            drive(speed * .85, speed * 1.15);
         else
             drive(speed, speed);
         msleep(1);
@@ -326,7 +326,7 @@ void light_start() {
 void get_people(double change, int claw_open, int first) {
     set_servo_position(arm, arm_down_people);
     set_servo_position(claw, claw_open);
-    msleep(500);
+    //msleep(500);
     move(1000, 600, change);
     msleep(500);
     move(1500, 50, change);
@@ -339,93 +339,103 @@ void get_people(double change, int claw_open, int first) {
     slow_servo(claw, claw_close); 
     msleep(200);
     if(first==1){
-        move(1500, 100, change); 
-        msleep(15000); 
+        move(1500, 100, change);
+        msleep(7000); 
     }
-    move(-1500, 525, change);
+
+    move(-1500, 500, change);
+    line_sense(-1000);
+    msleep(200);
     turn(1, tv, change);
     msleep(500);
-    slow_servo(claw, claw_close); 
-    msleep(200);
+
+    //slow_servo(claw, claw_close); 
+    //msleep(200);
     if(first==0) {
         slow_servo(claw, claw_open+400);
     }
-    msleep(500);
-    line_follow_middle(10, 750); 
-    while(analog(left_light) < black){
-        line_follow_middle(1, 1000);
-    } 
-    msleep(200);
-    if(burning_building == 1) {
-        move(-1500, 30, change);
-        if(counter==3){}
-        else{
-            slow_servo(claw, claw_close+200);
-            msleep(500);
-            slow_servo(arm, arm_up);
-            set_servo_position(claw, claw_close);
-            counter++;
-        }
-    } 
-    else if(burning_building == 0){
-        move(-1500, 100, change); 
-        msleep(200); 
-        turn(0, tv-15, change);
+    else{
         msleep(500);
-        move(1500, 380, change);
-        msleep(100);
-        if(counter==3){}
-        else {
-            slow_servo(claw, claw_close+200);
-            msleep(200);
-            move(-1500, 380, change);
-            msleep(300);
-            turn(1, tv-15, change);
+        line_follow_middle(10, 900); 
+        while(analog(left_light) < black){
+            line_follow_middle(1, 1000);
+        } 
+        slow_servo(claw, claw_open_fireman);
+        move(1500, 125, change);         
+        msleep(200);
+        if(burning_building == 1) {
+            move(-1500, 125, change);
+            if(counter==3){}
+            else{
+                msleep(500);
+                slow_servo(arm, arm_up);
+                set_servo_position(claw, claw_close);
+                counter++;
+            }
+        } 
+
+        else if(burning_building == 0){
+            move(-1500, 125, change); 
+            msleep(200); 
+            turn(0, tv-15, change);
             msleep(500);
-            slow_servo(arm, arm_up);
-            set_servo_position(claw, claw_close); 
-            counter++;
+            slow_servo(claw, claw_open_fireman);
+            move(1500, 380, change);
+            msleep(100);
+            if(counter==3){}
+            else{  
+                move(-1500, 380, change);
+                msleep(300);
+                turn(1, tv-15, change);
+                msleep(500);
+                slow_servo(arm, arm_up);
+                set_servo_position(claw, claw_close); 
+                counter++;
+            }
         }
     }
-
 }
-
-
 
 void get_people_middle(int change, int claw_open) {
     set_servo_position(arm, arm_down_people);
     msleep(500);
-    move(1500, 250, change);
+    move(1500, 350, change);
     msleep(500);
-    set_servo_position(claw, claw_open);
+    set_servo_position(claw, claw_open+400);
     msleep(300);
-    move(1500, 100, change);
+    move(1500, 25, change);
     msleep(300);
-    set_servo_position(claw, claw_open+130);
-    msleep(300);
+    //set_servo_position(claw, claw_open+200);
+    //msleep(300);
     move(1500, 120, change);
     msleep(400);
     set_servo_position(arm, arm_down);
     slow_servo(claw, claw_close);
+    if(counter == 1){
+        move(1500, 100, change);
+        msleep(15000);
+    }
     msleep(200);
-    move(-1500, 425, change);
+    move(-1500, 450, change);
+    line_sense(-1000);
     turn(1, tv, change);
     msleep(500);
     slow_servo(claw, claw_open);
     slow_servo(arm, arm_up);
+    counter++;
 }
 
 void get_people_main(int change){
     set_servo_position(arm, arm_up);
     msleep(200);
-    move(1500, 150, change);
+    move(1500, 250, change);
     msleep(500);
     turn(1, tv, change);
     msleep(500);
     move(1500, 76, change); 
     line_sense(1000);
     msleep(200);
-    move(-1500, 440, change);
+    move(-1500, 460, change);
     msleep(500); 
     turn(0, tv, change);
     msleep(500);
@@ -437,10 +447,13 @@ void get_people_main(int change){
     //goes towards the second building
     msleep(1000);
     turn(0, tv, change);
+    msleep(500); 
+    move(1500, 15, change); 
+    line_sense(-1000);
     msleep(500);
-    turn(0, tv, change);
+    turn(0, tv-10, change);
     msleep(500);
-    line_follow_middle_two(47, 1200);
+    line_follow_middle_two(34, 1200);
     msleep(200);
     turn(1, tv, change);
     msleep(500);
@@ -448,20 +461,19 @@ void get_people_main(int change){
     msleep(100);
     line_sense(-1000);
     msleep(100);
-
     //goes after the second people
-    get_people_middle(change, claw_open_people-75);
+    get_people_middle(change, claw_open_people-125);
 
     //goes towards the third building
     msleep(1000);
     turn(0, tv, change);
     msleep(500);
     move(1500, 30, change);
-    line_sense(-1000);
+    line_sense_grey(-1000);
     msleep(500);
     turn(0, tv, change);
     msleep(500);
-    line_follow_middle_two(23, 1200);
+    line_follow_middle_two(25, 1200);
     msleep(100);
     turn(1, tv, change);
     msleep(500);
@@ -471,14 +483,14 @@ void get_people_main(int change){
     msleep(100);
 
     //goes after the third people
-    get_people_middle(change, claw_open_people-75);
+    get_people_middle(change, claw_open_people-125);
 
     //goes towards the fourth building
     msleep(1000);
     turn(0, tv, change);
     msleep(500);
     move(1500, 30, change);
-    line_sense(-1000);
+    line_sense_grey(-1000);
     msleep(500);
     turn(0, tv, change);
     msleep(500);
@@ -493,12 +505,28 @@ void get_people_main(int change){
 
     //goes after the fourth people
     get_people(change, claw_open_people-75, 0);
+    line_follow_middle(100, 1000); 
+    if(burning_building == 1){
+        while(analog(left_light) < black){
+            line_follow_middle(1, 1000);
+        } 
+        move(1500, 50, change);
+        slow_servo(claw, claw_close+300);
+    }
+    else if(burning_building == 0){
+        while(analog(left_light) < black){
+            line_follow_middle(1, 1000);
+        } 
+        turn(0, tv/3, change); 
+        msleep(200);
+        move(1500, 250, change); 
+    }
 
 }
 
 void scanBuilding(double change){
     drive_clear();
-    camera_open_black();    
+    camera_open_black();  
     timeout = 0;
     printf("scan start\n");
     while(analog(left_light) < black){
@@ -510,9 +538,30 @@ void scanBuilding(double change){
     ao();
     msleep(1000); 
     camera_update();
+    msleep(100);
+    camera_update();
+    msleep(100);
+    camera_update();
+    msleep(100);
     printf("burning: %d \n", get_object_area(0, 0));
     printf("objects: %d \n", get_object_count(0));
-    if(get_object_area(0, 0) > 10 && get_object_area(0, 0) < 30){
+    int i;
+    
+    for(i = get_object_count(0); i > 0; i--){
+        printf("object %d \n", i);
+        printf("object area %d \n", get_object_area(0, i));  
+        if(get_object_area(0, i) > 100){
+            burning_building = 0; 
+            printf("burning building is close\n");
+
+        }
+    }
+    printf("burning building is: %d ", burning_building); 
+    camera_close();
+    printf("scan done\n");
+
+
+        /*if(get_object_area(0, 0) > 475){
         printf("burning: %d \n", get_object_area(0, 0));
         burning_building = 0;
         printf("burning building is close\n");
@@ -522,10 +571,13 @@ void scanBuilding(double change){
         burning_building = 1; 
         printf("burning building is far\n");
     }
+
     //printf("left motor: %d", gmpc(MOT_LEFT));
     //printf("right motor: %d", gmpc(MOT_RIGHT));
     camera_close();
     printf("scan done\n"); 
+    */
+
 }
 
 int main(){
@@ -537,6 +589,7 @@ int main(){
     counter = 0;
     double change = gyrocalibrate();
     //msleep(1000);
+    //test get_people_main(change);
     waitButton();
     shut_down_in(119);
     //people and ambulance go on ground of nonburning building, medical supplies go on top of nonburning building
@@ -545,18 +598,18 @@ int main(){
     turn(1, tv, change); 
     msleep(500); 
     move(-1500, 200, change); //square up
-    set_servo_position(arm, arm_down_people+45);
+    set_servo_position(arm, arm_down_people+75);
     msleep(300);
     set_servo_position(claw, claw_open_medical);
     move(1500, 600, change);
     line_sense(1000);
-    //get medical supplies 
+    //get medical supplies and ambulance 
     msleep(300);
-    move(1500, 15, change);
+    move(1500, 35, change);
     //msleep(200);
     //slow_servo(claw, claw_close+350); 
     msleep(200);
-    turn(1, tv-10, change);
+    turn(1, tv, change);
     msleep(500);
     slow_servo(claw, claw_open_medical);
     msleep(200);
@@ -567,6 +620,8 @@ int main(){
         move(1500, 50, change); 
         slow_servo(claw, claw_open_medical); //drops off medical supplies and ambulance 
         msleep(500); 
+        slow_servo(arm, arm_up); 
+        msleep(200);
         move(-1500, 150, change);
         msleep(500);
         slow_servo(arm, arm_up); 
@@ -583,12 +638,14 @@ int main(){
         msleep(500);
         move(1500, 500, change); //moves forward to burning building 
         move(-1500, 25, change); 
-        msleep(500);				
+        msleep(500);                
         //turn(1, 30, change);  
         //msleep(500);
         //move(1500, 100, change); 
         slow_servo(claw, claw_open_medical); //drops off medical supplies and ambulance 
         msleep(500);
+        slow_servo(arm, arm_up); 
+        msleep(200);
         move(-1500, 250, change);
         msleep(200);
         slow_servo(arm, arm_up);
