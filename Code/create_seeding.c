@@ -272,10 +272,42 @@ void turnRightSlow(int angle) {
     create_stop();
 }
 
-void lightSense() {
-	while(analog(lightPin) > 2000) {
-		msleep(2);
-    }
+void light_start () {
+  while(right_button());
+  int max = 0,
+    min = 9999,
+    curr = 0,
+    avg = 0;
+
+  display_clear();
+  display_printf(0,0,"Max:");
+  display_printf(0,1,"Min:");
+  display_printf(0,2,"Curr:");
+  display_printf(0,3,"avg:");
+
+  while (!right_button()) {
+    curr = analog(LIGHT);
+
+    if (curr > max) max = curr;
+    if (curr < min) min = curr;
+
+    avg = (max + min) / 2;
+
+    display_printf(5, 0, "%d   ", max);
+    display_printf(5, 1, "%d   ", min);
+    display_printf(6, 2, "%d   ", curr);
+    display_printf(5,3,"%d   ",avg);
+
+    if (curr > avg) display_printf(10,5,"XX");
+    else display_printf(10,5,"OO");
+
+    msleep(50);
+  }
+  msleep(1000);
+  display_clear();
+  display_printf(0,4,"Prepared to begin: left to skip");
+
+  while (analog(LIGHT) > avg && !(right_button())) msleep(50);
 }
 
 void waitButton() {
@@ -330,7 +362,7 @@ int main(){
     slow_servo(servoPin, 0); //bin gripper down
     
     msleep(1000); // Light sense here
-    //lightSense();
+    //light_start();
     waitButton();
     shut_down_in(119);
     
