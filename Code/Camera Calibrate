@@ -1,48 +1,90 @@
 #include <kipr/botball.h>
 int burning_building = 1; 
-#define yellow 0
-#define red 1
+int yellow = 1; //hue: 32 52 sat: 67 147 val: 146 226
+int red = 0;//hue: 354, 14 sat: 144, 224 val: 86 166
 int main()
 {
+    int yellowsum = 0;
+    //int redsum = 0;
     camera_open_black();  
     printf("scan start\n");
-    camera_update();
-    msleep(50);
-    camera_update();
-    msleep(50);
-    camera_update();
-    msleep(50);
+    int times;
+    for(times = 0; times < 10; times++){
+        camera_update();
+        msleep(100);
+    }
     printf("yellow objects: %d \n", get_object_count(yellow));
-    printf("red objects: %d \n", get_object_count(red));
+    //test yellow
     int i;
-    if(get_object_count(yellow) > 0){
-        for(i = get_object_count(yellow); i > 0; i--){
-            printf("yellow object: %d \n", i);
-            printf("yellow object area: %d \n", get_object_area(yellow, i));  
-            if(get_object_area(yellow, i) > 700 && get_object_area(yellow, i) < 1600){
-                burning_building = 0; 
-                printf("burning building is close\n");
-            }
+    for(i = get_object_count(yellow)-1; i >= 0; i--){
+        printf("yellow object: %d \n", i);
+        printf("yellow object area: %d \n", get_object_area(yellow, i)); 
+        yellowsum+=get_object_area(yellow, i);
+        if(yellowsum > 1000){
+            printf("burning building is close\n");
         }
     }
     camera_update();
-    msleep(50);
+    printf("%d", yellowsum);
+    for(i = get_object_count(yellow)-1; i >= 0; i--){
+        printf("yellow object: %d \n", i);
+        printf("yellow object area: %d \n", get_object_area(yellow, i)); 
+        yellowsum+=get_object_area(yellow, i);
+        if(yellowsum > 1000){
+            printf("burning building is close\n");
+        }
+    }
     camera_update();
-    msleep(50);
+    printf("%d", yellowsum);
+    for(i = get_object_count(yellow)-1; i >= 0; i--){
+        printf("yellow object: %d \n", i);
+        printf("yellow object area: %d \n", get_object_area(yellow, i)); 
+        yellowsum+=get_object_area(yellow, i);
+        if(yellowsum > 1000){
+            printf("burning building is close\n");
+        }
+    }
     camera_update();
-    msleep(50);
-    int x;
-    if(get_object_count(red) > 0){
-        for(x = get_object_count(red); x > 0; i--){
+    printf("%d", yellowsum);
+    for(i = get_object_count(yellow)-1; i >= 0; i--){
+        printf("yellow object: %d \n", i);
+        printf("yellow object area: %d \n", get_object_area(yellow, i)); 
+        yellowsum+=get_object_area(yellow, i);
+        if(yellowsum > 1000){
+            printf("burning building is close\n");
+        }
+    }
+	camera_update();
+    printf("%d", yellowsum);
+    for(i = get_object_count(yellow)-1; i >= 0; i--){
+        printf("yellow object: %d \n", i);
+        printf("yellow object area: %d \n", get_object_area(yellow, i)); 
+        yellowsum+=get_object_area(yellow, i);
+        if(yellowsum > 1000){
+            printf("burning building is close\n");
+        }
+    }
+    printf("%d", yellowsum);
+    /*
+    //test red
+    camera_update();
+    if(burning_building == 1){
+        printf("red objects: %d \n", get_object_count(red));
+        int x;
+        for(x = 0; x < get_object_count(red); x++){
             printf("red object: %d \n", i);
             printf("red object area: %d \n", get_object_area(red, i));  
-            if(get_object_area(red, i) > 700 && get_object_area(red, i) < 1600){
+            redsum += get_object_area(red, i);
+            if(redsum > 100){
                 burning_building = 0; 
                 printf("burning building is close\n");
             }
         }
     }
+	*/
     printf("burning building is: %d ", burning_building); 
+    printf("%d", yellowsum);
+    //printf("%d", redsum);
     camera_close();
     printf("scan done\n");
     return 0;
