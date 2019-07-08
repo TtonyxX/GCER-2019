@@ -352,11 +352,6 @@ int main(){
     }
 
     cmpc(motorPin);
-    
-    
-    moveArm(armLevel + 950);
-    set_servo_position(wristPin, wristDown);
-    msleep(100000);
 
     msleep(1000); // Sleep to check if up is right
 
@@ -417,16 +412,18 @@ int main(){
         msleep(200);
         turnLeft(170);
         move(150, 135, change);
+        // Wait to let wallaby go
+        msleep(3000);
     }
 
     // Moving and second pick up
 
-    moveArm(armUp-300);
+    moveArm(armUp-250);
     msleep(100);
-    set_servo_position(wristPin, wristUp+70);
+    set_servo_position(wristPin, wristUp+80);
     turnLeft(38);
     msleep(50);
-    moveArm(armUp-300);
+    moveArm(armUp-250);
     msleep(50);
     move(-200, 387, change);
     msleep(300);
@@ -439,7 +436,7 @@ int main(){
     } else {
         turnRight(3);
         msleep(200);
-        move(-150, 170, change);
+        move(-150, 160, change);
         msleep(200);
         set_servo_position(clawPin, clawClose-210);
         msleep(200);
@@ -456,7 +453,8 @@ int main(){
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
-        if(burningBuilding != 0) msleep(4300);
+        if(burningBuilding != 0) msleep(1300);
+        else msleep(3000);
         moveArm(armMiddle+100);
         move(-150, 160, change);
         msleep(300);
@@ -473,9 +471,9 @@ int main(){
         } else {
             turnLeft(58);
         }
-        moveArm(armMiddle+150);
+        moveArm(armMiddle+100);
         msleep(100);
-        set_servo_position(wristPin, wristMiddle-60);
+        set_servo_position(wristPin, wristMiddle-100);
         msleep(200);
         move(-200, 215, change);
         msleep(300);
@@ -497,7 +495,6 @@ int main(){
         moveArm(armLevel-300);
         slow_servo(clawPin, clawOpen);
         set_servo_position(wristPin, wristMiddle);
-        msleep(3300);
         moveArm(armMiddle);
         msleep(300);
         turnRight(100);
@@ -536,7 +533,15 @@ int main(){
 
     // Sense block
 
-    scanForItem(50);
+    int i;
+    for(i=0; i<50; i++) {
+        create_drive_direct(30, -30);
+        msleep(30);
+        create_stop();
+        if(analog(etPin) > 1900) {
+            break;
+        }
+    }
     turnRight(3);
     msleep(100);
     moveArm(armLevel + 300);
@@ -544,7 +549,9 @@ int main(){
     set_servo_position(clawPin, clawCloseWater);
     msleep(100);
     moveArm(armUp);
-    msleep(100);
+    
+    // Sleep for Wallaby
+    msleep(1000);
 
     // Move to the burning building
 
